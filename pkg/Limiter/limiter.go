@@ -1,4 +1,4 @@
-package middlewares
+package Limiter
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ type Limiter struct {
 	bucket  chan *GrpcData
 }
 
-var DefaultLimiter = NewLimiter(10)
+var DefaultLimiter = NewLimiter(5)
 
 func NewLimiter(c int) *Limiter {
 	return &Limiter{

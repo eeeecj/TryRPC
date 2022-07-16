@@ -1,19 +1,19 @@
 package sim
 
 import (
-	"github.com/TryRpc/internal/server/middlewares"
+	"github.com/TryRpc/pkg/Limiter"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
 func (sim *Simulation) Create(c *gin.Context) {
-	var r middlewares.GrpcData
+	var r Limiter.GrpcData
 	if err := c.ShouldBindJSON(&r); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": err.Error(),
 		})
 	}
-	middlewares.DefaultLimiter.GetConn(&r)
+	Limiter.DefaultLimiter.GetConn(&r)
 	c.JSON(http.StatusOK, gin.H{
 		"message": "",
 	})

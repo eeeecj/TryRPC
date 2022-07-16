@@ -1,8 +1,7 @@
 package server
 
 import (
-	"github.com/TryRpc/internal/server/controller/v1/sim"
-	"github.com/TryRpc/internal/server/middlewares"
+	sim2 "github.com/TryRpc/internal/server/controller/v1/Sim"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 )
@@ -17,8 +16,8 @@ func installController(g *gin.Engine) {
 	{
 		simv1 := v1.Group("/sims")
 		{
-			simController := sim.NewSimulationController()
-			simv1.POST("/create", middlewares.DefaultMiddleWares["limiter"], simController.Create)
+			sim := sim2.NewSim()
+			simv1.POST("/create", sim.Create)
 			//simv1.POST("/get", simController.Get)
 		}
 	}

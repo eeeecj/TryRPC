@@ -1,10 +1,13 @@
 package middlewares
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/TryRpc/pkg/Limiter"
+	"github.com/gin-gonic/gin"
+)
 
 func defaultMiddlewares() map[string]gin.HandlerFunc {
 	return map[string]gin.HandlerFunc{
-		"limiter": DefaultLimiter.Limit(),
+		"limiter": Limiter.DefaultLimiter.Limit(),
 	}
 }
 

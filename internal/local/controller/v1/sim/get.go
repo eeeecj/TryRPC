@@ -1,12 +1,12 @@
 package sim
 
 import (
-	"github.com/TryRpc/internal/server/middlewares"
+	"github.com/TryRpc/pkg/Limiter"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
 func (sim *Simulation) Get(c *gin.Context) {
-	data := middlewares.DefaultLimiter.ReleaseLimiter()
+	data := Limiter.DefaultLimiter.ReleaseLimiter()
 	c.JSON(http.StatusOK, data)
 }
