@@ -1,31 +1,37 @@
 package server
 
 import (
-	"github.com/TryRpc/internal/local/middlewares"
-	"github.com/TryRpc/internal/server/service"
-	"github.com/gin-gonic/gin"
+	"github.com/TryRpc/internal/server/service/Proxy"
+	"github.com/TryRpc/internal/server/service/genericserver"
 	"golang.org/x/sync/errgroup"
 	"log"
 )
 
 func New() *App {
 	return &App{
-		gin.New(),
+		genericserver.NewGenericServer(),
 		[]string{},
-		service.NewProxy(service.NewProxyOption()),
+		Proxy.NewProxy(),
 	}
 }
 
 type App struct {
-	Engine      *gin.Engine
-	Middlewares []string
-	Proxy       *service.Proxy
+	GenericServer *genericserver.GenericServer
+	Middlewares   []string
+	Proxy         *Proxy.Proxy
+}
+
+func (app *App) Prepare() *App {
+	app.GenericServer.InstallMiddleWares()
+	InitRouter(app.GenericServer.Engine)
+	return app
 }
 
 func (app *App) Run() {
 	var e errgroup.Group
 	e.Go(func() error {
-		return app.Engine.Run(":8080")
+		app.GenericServer.Run(":8080")
+		return nil
 	})
 	e.Go(func() error {
 		app.Proxy.Start()
@@ -34,16 +40,5 @@ func (app *App) Run() {
 
 	if err := e.Wait(); err != nil {
 		log.Fatal(err)
-	}
-}
-
-func (app *App) InstallMiddleWares() {
-	for _, m := range app.Middlewares {
-		mw, ok := middlewares.DefaultMiddleWares[m]
-		if !ok {
-			log.Printf("can not find middleware")
-			continue
-		}
-		app.Engine.Use(mw)
 	}
 }

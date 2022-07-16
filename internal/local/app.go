@@ -18,7 +18,7 @@ type App struct {
 func NewApp() *App {
 	return &App{
 		GinServer: gin.Default(),
-		Proxy:     Proxy.NewProxy(Proxy.NewProxyOption()),
+		Proxy:     Proxy.NewProxy(),
 		Worker:    Worker.NewWorker(),
 	}
 }

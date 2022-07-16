@@ -7,6 +7,7 @@ import (
 	"github.com/TryRpc/pkg/Limiter"
 	"google.golang.org/grpc"
 	"log"
+	"runtime"
 	"sync"
 	"time"
 )
@@ -26,20 +27,22 @@ func NewWorker() *Worker {
 	}
 }
 
+func (w *Worker) Close() {
+	w.errchan <- struct{}{}
+}
+
 func (w *Worker) Start() {
-	for {
-		var wg = &sync.WaitGroup{}
-		wg.Add(2)
-		grpcConn, err := grpc.Dial(":1234", grpc.WithInsecure())
-		if err != nil {
-			log.Println(err)
-		}
-		client := hello.NewHelloClient(grpcConn)
-		w.Client = client
-		go w.getMission(wg)
-		go w.Solve(wg)
-		wg.Wait()
+	var wg = &sync.WaitGroup{}
+	wg.Add(2)
+	grpcConn, err := grpc.Dial(":1234", grpc.WithInsecure())
+	if err != nil {
+		log.Println(err)
 	}
+	client := hello.NewHelloClient(grpcConn)
+	w.Client = client
+	go w.getMission(wg)
+	go w.Solve(wg)
+	wg.Wait()
 }
 
 func (w *Worker) getMission(wg *sync.WaitGroup) {
@@ -59,15 +62,20 @@ func (w *Worker) getMission(wg *sync.WaitGroup) {
 func (w *Worker) Solve(wg *sync.WaitGroup) {
 	defer wg.Done()
 	for {
-
-		r := <-w.RequestChan
-		res, err := w.Client.Hello(context.Background(), r)
-		if err != nil {
-			log.Println(err)
-			w.errchan <- struct{}{}
+		select {
+		case <-w.errchan:
+			runtime.Goexit()
+		default:
+			r := <-w.RequestChan
+			res, err := w.Client.Hello(context.Background(), r)
+			if err != nil {
+				log.Println(err)
+				w.errchan <- struct{}{}
+				return
+			}
+			fmt.Println(res)
+			time.Sleep(time.Second)
 		}
-		fmt.Println(res)
-		time.Sleep(time.Second)
 
 	}
 }

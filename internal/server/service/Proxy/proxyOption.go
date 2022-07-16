@@ -1,15 +1,15 @@
 package Proxy
 
 type ProxyOption struct {
+	Controller string
 	Local      string
 	Remote     string
-	Controller string
 }
 
 func NewProxyOption() *ProxyOption {
 	return &ProxyOption{
-		Local:      ":7887",
 		Remote:     ":20021",
+		Local:      ":8081",
 		Controller: ":8082",
 	}
 }
