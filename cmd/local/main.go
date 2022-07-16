@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-var clientChan = make(chan *hello.HelloRequest, 2)
+var ClientChan = make(chan *hello.HelloRequest, 2)
 
 func main() {
 	client := &http.Client{}
@@ -45,7 +45,7 @@ func main() {
 				}
 				r := hello.HelloRequest{Input: data.Data}
 				fmt.Println(r)
-				clientChan <- &r
+				ClientChan <- &r
 			}
 			time.Sleep(time.Second)
 		}
@@ -57,7 +57,7 @@ func main() {
 func Solve(wg *sync.WaitGroup, grpcClient hello.HelloClient) {
 	defer wg.Done()
 	for {
-		r := <-clientChan
+		r := <-ClientChan
 		fmt.Println(r)
 		res, _ := grpcClient.Hello(context.Background(), r)
 		fmt.Println(res)
