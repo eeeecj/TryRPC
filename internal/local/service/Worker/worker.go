@@ -33,7 +33,7 @@ func (w *Worker) Close() {
 
 func (w *Worker) Start() {
 	var wg = &sync.WaitGroup{}
-	wg.Add(2)
+	wg.Add(w.C + 1)
 	grpcConn, err := grpc.Dial(":1234", grpc.WithInsecure())
 	if err != nil {
 		log.Println(err)
@@ -41,7 +41,9 @@ func (w *Worker) Start() {
 	client := hello.NewHelloClient(grpcConn)
 	w.Client = client
 	go w.getMission(wg)
-	go w.Solve(wg)
+	for i := 0; i < w.C; i++ {
+		go w.Solve(wg)
+	}
 	wg.Wait()
 }
 
@@ -65,16 +67,15 @@ func (w *Worker) Solve(wg *sync.WaitGroup) {
 		select {
 		case <-w.errchan:
 			runtime.Goexit()
-		default:
-			r := <-w.RequestChan
+		case r := <-w.RequestChan:
 			res, err := w.Client.Hello(context.Background(), r)
+			time.Sleep(3 * time.Second)
 			if err != nil {
 				log.Println(err)
 				w.errchan <- struct{}{}
 				return
 			}
 			fmt.Println(res)
-			time.Sleep(time.Second)
 		}
 
 	}

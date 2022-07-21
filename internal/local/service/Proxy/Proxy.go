@@ -2,16 +2,19 @@ package Proxy
 
 import (
 	"bufio"
+	"fmt"
 	"github.com/TryRpc/pkg/service"
 	"io"
 	"log"
+	"time"
 )
 
 type Proxy struct {
+	closing chan struct{}
 }
 
 func NewProxy() *Proxy {
-	return &Proxy{}
+	return &Proxy{closing: make(chan struct{}, 1)}
 }
 
 const NewConnection = "NewConnection\n"
@@ -19,11 +22,16 @@ const NewConnection = "NewConnection\n"
 var option = NewProxyOption()
 
 func (p *Proxy) Start() {
-	controllerConnection()
+	controllerConnection(p.closing)
 }
 
-func controllerConnection() {
-	var closing = make(chan struct{}, 1)
+func (p *Proxy) Close() {
+	localpool.Close()
+	remotePool.Close()
+	p.closing <- struct{}{}
+	time.Sleep(time.Second * 3)
+}
+func controllerConnection(closing chan struct{}) {
 	controllerConn, err := service.CreateConn(option.Controller)
 	if err != nil {
 		log.Println("连接控制器失败：", err)
@@ -32,31 +40,41 @@ func controllerConnection() {
 	defer controllerConn.Close()
 	log.Printf("连接控制器成功:%s", option.Controller)
 	for {
-		buf, err := bufio.NewReader(controllerConn).ReadString('\n')
-		switch err {
-		case nil:
+		select {
+		case <-closing:
+			fmt.Println("closing")
+			return
+		default:
+			buf, err := bufio.NewReader(controllerConn).ReadString('\n')
+			if err != nil {
+				log.Println(err)
+				return
+			}
 			if buf == NewConnection {
 				go proxyConn(closing)
 			}
-		default:
-			log.Println(err)
-			return
 		}
 	}
 }
 
 func proxyConn(closing chan struct{}) {
-	remoteConn, err := service.CreateConn(option.Remote)
+	remoteConn, err := remotePool.Get()
 	if err != nil {
 		panic(err)
 	}
 	log.Println("连接远程代理成功:", option.Remote)
-	localConn, err := service.CreateConn(option.Local)
+	localConn, err := localpool.Get()
 	if err != nil {
 		panic(err)
 	}
-	log.Println("连接本地服务成功：", err)
-	go io.Copy(localConn, remoteConn)
+	log.Println("连接本地服务成功：", option.Local)
+	go func() {
+		io.Copy(localConn, remoteConn)
+		defer localConn.Close()
+	}()
 
-	go io.Copy(remoteConn, localConn)
+	go func() {
+		io.Copy(remoteConn, localConn)
+		defer remoteConn.Close()
+	}()
 }

@@ -1,6 +1,9 @@
 # github.com/davecgh/go-spew v1.1.1
 ## explicit
 github.com/davecgh/go-spew/spew
+# github.com/fatih/pool v3.0.0+incompatible
+## explicit
+github.com/fatih/pool
 # github.com/gin-contrib/pprof v1.4.0
 ## explicit; go 1.14
 github.com/gin-contrib/pprof
@@ -69,13 +72,9 @@ github.com/pelletier/go-toml/v2/internal/tracker
 github.com/pmezard/go-difflib/difflib
 # github.com/stretchr/objx v0.1.0
 ## explicit
-github.com/stretchr/objx
 # github.com/stretchr/testify v1.7.1
 ## explicit; go 1.13
-github.com/stretchr/testify
 github.com/stretchr/testify/assert
-github.com/stretchr/testify/http
-github.com/stretchr/testify/mock
 # github.com/ugorji/go/codec v1.2.7
 ## explicit; go 1.11
 github.com/ugorji/go/codec

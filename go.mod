@@ -3,6 +3,7 @@ module github.com/TryRpc
 go 1.18
 
 require (
+	github.com/fatih/pool v3.0.0+incompatible
 	github.com/gin-contrib/pprof v1.4.0
 	github.com/gin-gonic/gin v1.8.1
 	github.com/stretchr/testify v1.7.1
