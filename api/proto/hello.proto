@@ -3,7 +3,8 @@ syntax="proto3";
 package proto;
 option go_package="./";
 
-
+// python -m grpc_tools.protoc -I. ./hello.proto --python_out=. --grpc_python_out=. 
+// ptotoc -I. ./hello.proto --go_out=plugins=grpc:.
 
 service  Hello{
   rpc Hello(HelloRequest) returns (HelloResponse);

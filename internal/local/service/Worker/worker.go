@@ -3,7 +3,7 @@ package Worker
 import (
 	"context"
 	"fmt"
-	hello "github.com/TryRpc/api/proto"
+	hello "github.com/TryRpc/api/proto/go"
 	"github.com/TryRpc/pkg/Limiter"
 	"google.golang.org/grpc"
 	"log"
