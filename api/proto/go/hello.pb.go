@@ -220,7 +220,7 @@ var _ grpc.ClientConnInterface
 // is compatible with the grpc package it is being compiled against.
 const _ = grpc.SupportPackageIsVersion6
 
-// HelloClient is the client API for Hello service.
+// HelloClient is the client API for Hello tt.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type HelloClient interface {
@@ -244,7 +244,7 @@ func (c *helloClient) Hello(ctx context.Context, in *HelloRequest, opts ...grpc.
 	return out, nil
 }
 
-// HelloServer is the server API for Hello service.
+// HelloServer is the server API for Hello tt.
 type HelloServer interface {
 	Hello(context.Context, *HelloRequest) (*HelloResponse, error)
 }

@@ -1,44 +1,28 @@
 package server
 
 import (
-	"github.com/TryRpc/internal/server/service/Proxy"
-	"github.com/TryRpc/internal/server/service/genericserver"
-	"golang.org/x/sync/errgroup"
-	"log"
+	"github.com/TryRpc/component/pkg/cuszap"
+	"github.com/TryRpc/internal/server/config"
+	"github.com/TryRpc/internal/server/options"
+	"github.com/TryRpc/pkg/app"
 )
 
-func New() *App {
-	return &App{
-		genericserver.NewGenericServer(),
-		[]string{},
-		Proxy.NewProxy(),
-	}
+const commandDesc = `The server proxy the http request to the local server`
+
+func NewApp(basename string) *app.App {
+	opt := options.NewOptions()
+	application := app.NewApp(basename, "Proxy Server",
+		app.WithOptions(opt),
+		app.WithDescription(commandDesc),
+		app.WithRunFunc(run(opt)))
+	return application
 }
 
-type App struct {
-	GenericServer *genericserver.GenericServer
-	Middlewares   []string
-	Proxy         *Proxy.Proxy
-}
-
-func (app *App) Prepare() *App {
-	app.GenericServer.InstallMiddleWares()
-	InitRouter(app.GenericServer.Engine)
-	return app
-}
-
-func (app *App) Run() {
-	var e errgroup.Group
-	e.Go(func() error {
-		app.GenericServer.Run(":8080")
-		return nil
-	})
-	e.Go(func() error {
-		app.Proxy.Start()
-		return nil
-	})
-
-	if err := e.Wait(); err != nil {
-		log.Fatal(err)
+func run(opt *options.Options) app.RunFunc {
+	return func(basename string) error {
+		cuszap.Init(opt.Log)
+		defer cuszap.Flush()
+		cfg := config.NewConfig(opt)
+		return Run(cfg)
 	}
 }

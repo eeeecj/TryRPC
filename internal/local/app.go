@@ -1,48 +1,27 @@
 package local
 
 import (
-	"fmt"
-	"github.com/TryRpc/internal/local/service/Proxy"
-	"github.com/TryRpc/internal/local/service/Worker"
-	"github.com/gin-gonic/gin"
-	"golang.org/x/sync/errgroup"
-	"log"
+	"github.com/TryRpc/component/pkg/cuszap"
+	"github.com/TryRpc/internal/local/config"
+	"github.com/TryRpc/internal/local/options"
+	"github.com/TryRpc/pkg/app"
 )
 
-type App struct {
-	GinServer *gin.Engine
-	Proxy     *Proxy.Proxy
-	Worker    *Worker.Worker
-}
+const commandDesc = `The client proxy the http request to the local server`
 
-func NewApp() *App {
-	return &App{
-		GinServer: gin.Default(),
-		Proxy:     Proxy.NewProxy(),
-		Worker:    Worker.NewWorker(),
-	}
+func NewApp(basename string) *app.App {
+	opt := options.NewOptions()
+	application := app.NewApp(basename, "Proxy Server",
+		app.WithOptions(opt),
+		app.WithDescription(commandDesc),
+		app.WithRunFunc(run(opt)))
+	return application
 }
-
-func (app *App) Prepare() *App {
-	InstallRouter(app.GinServer)
-	return app
-}
-
-func (app *App) Run() {
-	fmt.Println(app.Proxy)
-	var e errgroup.Group
-	e.Go(func() error {
-		return app.GinServer.Run(":7887")
-	})
-	e.Go(func() error {
-		app.Proxy.Start()
-		return nil
-	})
-	e.Go(func() error {
-		app.Worker.Start()
-		return nil
-	})
-	if err := e.Wait(); err != nil {
-		log.Fatal(err)
+func run(opt *options.Options) app.RunFunc {
+	return func(basename string) error {
+		cuszap.Init(opt.Log)
+		defer cuszap.Flush()
+		cfg := config.NewConfig(opt)
+		return Run(cfg)
 	}
 }

@@ -5,8 +5,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	grpc2 "github.com/TryRpc/api/grpc"
 	hello "github.com/TryRpc/api/proto/go"
-	"github.com/TryRpc/pkg/Limiter"
 	"google.golang.org/grpc"
 	"log"
 	"net"
@@ -49,7 +49,7 @@ func getConnect(wg *sync.WaitGroup, c chan struct{}) {
 		case syscall.EAGAIN:
 			continue
 		case nil:
-			var data Limiter.GrpcData
+			var data grpc2.GrpcData
 			if err := json.Unmarshal(s, &data); err != nil {
 				log.Println("here", err)
 			}
