@@ -64,7 +64,7 @@ func (p *ProxyServer) controllerConnection() {
 		default:
 			buf, err := bufio.NewReader(controllerConn).ReadString('\n')
 			if err != nil {
-				log.Println(err)
+				cuszap.Infof("%v", err)
 				return
 			}
 			if buf == NewConnection {
